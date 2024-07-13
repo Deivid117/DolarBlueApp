@@ -11,8 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.semantics.Role
+import com.varqulabs.dolarblue.core.presentation.utils.keyboard.rememberIsKeyboardOpen
 import kotlinx.coroutines.delay
 
 // Public, exposed to apply in Our Composables, with the ripple effect
@@ -89,4 +92,32 @@ private fun Modifier.clickableSingle(
         indication = indication,
         interactionSource = interactionSource
     )
+}
+
+// Permite quitar el foco del textField una vez se cierra el teclado con las teclas de
+// navegación o por medio de gestos
+fun Modifier.clearFocusOnKeyboardDismiss(): Modifier = composed {
+    var isFocused by remember { mutableStateOf(false) }
+    var keyboardAppearedSinceLastFocused by remember { mutableStateOf(false) }
+
+    if (isFocused) {
+        val isKeyboardOpen by rememberIsKeyboardOpen()
+
+        val focusManager = LocalFocusManager.current
+        LaunchedEffect(isKeyboardOpen) {
+            if (isKeyboardOpen) {
+                keyboardAppearedSinceLastFocused = true
+            } else if (keyboardAppearedSinceLastFocused) {
+                focusManager.clearFocus()
+            }
+        }
+    }
+    onFocusEvent {
+        if (isFocused != it.isFocused) {
+            isFocused = it.isFocused
+            if (isFocused) {
+                keyboardAppearedSinceLastFocused = false
+            }
+        }
+    }
 }
