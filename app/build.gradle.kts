@@ -117,6 +117,9 @@ dependencies {
 
     // Kotlin DateTime
     implementation(libs.kotlinx.datetime)
+
+    // Kotlin UUID
+    implementation(libs.kotlinx.uuid.core)
 }
 
 room {
